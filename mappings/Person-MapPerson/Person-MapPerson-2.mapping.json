@@ -1,0 +1,17 @@
+{
+  "language" : "zxx",
+  "name" : "Person-MapPerson",
+  "description" : "Default description",
+  "version" : 2,
+  "targetEntityType" : "Person-0.0.1/Person",
+  "sourceContext" : "/",
+  "sourceURI" : "/Users/ajacobs/MarkLogic/git/dhf5/data/person/cd8a3dcd-469e-4575-aa68-716b35c981a6.json",
+  "properties" : {
+    "firstName" : {
+      "sourcedFrom" : "first_name"
+    },
+    "id" : {
+      "sourcedFrom" : "id"
+    }
+  }
+}

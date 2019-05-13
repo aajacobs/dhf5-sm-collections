@@ -1,0 +1,197 @@
+{
+  "name" : "Person",
+  "description" : "",
+  "batchSize" : 100,
+  "threadCount" : 4,
+  "stopOnError" : false,
+  "options" : { },
+  "version" : 0,
+  "steps" : {
+    "1" : {
+      "name" : "IngestPerson",
+      "description" : "",
+      "options" : {
+        "sourceQuery" : "cts.collectionQuery([\"\"])",
+        "collections" : [ "IngestPerson" ],
+        "permissions" : "rest-reader,read,rest-writer,update",
+        "outputFormat" : "json",
+        "targetDatabase" : "data-hub-STAGING"
+      },
+      "customHook" : { },
+      "retryLimit" : 0,
+      "batchSize" : 0,
+      "threadCount" : 0,
+      "stepDefinitionName" : "default-ingestion",
+      "stepDefinitionType" : "INGESTION",
+      "fileLocations" : {
+        "inputFilePath" : "/Users/ajacobs/MarkLogic/git/dhf5/data/person",
+        "inputFileType" : "csv",
+        "outputURIReplacement" : ""
+      }
+    },
+    "2" : {
+      "name" : "MapPerson",
+      "description" : "",
+      "options" : {
+        "sourceQuery" : "cts.collectionQuery([\"IngestPerson\"])",
+        "mapping" : {
+          "name" : "Person-MapPerson",
+          "version" : 2
+        },
+        "targetEntity" : "Person",
+        "sourceDatabase" : "data-hub-STAGING",
+        "collections" : [ "MapPerson", "mdm-content" ],
+        "sourceCollection" : "IngestPerson",
+        "targetDatabase" : "data-hub-FINAL"
+      },
+      "customHook" : { },
+      "retryLimit" : 0,
+      "batchSize" : 0,
+      "threadCount" : 0,
+      "stepDefinitionName" : "default-mapping",
+      "stepDefinitionType" : "MAPPING"
+    },
+    "3" : {
+      "name" : "MasterPerson",
+      "description" : "",
+      "options" : {
+        "stepUpdate" : true,
+        "sourceQuery" : "cts.collectionQuery([\"MapPerson\"])",
+        "acceptsBatch" : true,
+        "targetEntity" : "Person",
+        "sourceDatabase" : "data-hub-FINAL",
+        "collections" : [ "MasterPerson", "Person" ],
+        "mergeOptions" : {
+          "matchOptions" : "",
+          "propertyDefs" : {
+            "properties" : [ {
+              "localname" : "firstName",
+              "name" : "firstName"
+            } ],
+            "namespaces" : { }
+          },
+          "algorithms" : {
+            "stdAlgorithm" : {
+              "timestamp" : { }
+            },
+            "custom" : [ ],
+            "collections" : {
+              "onMerge" : {
+                "add" : {
+                  "collection" : [ "" ]
+                },
+                "remove" : {
+                  "collection" : [ "" ]
+                },
+                "set" : {
+                  "collection" : [ "personMerge" ]
+                }
+              },
+              "onNoMatch" : {
+                "add" : {
+                  "collection" : [ "" ]
+                },
+                "remove" : {
+                  "collection" : [ "" ]
+                },
+                "set" : {
+                  "collection" : [ "personNoMatch" ]
+                }
+              },
+              "onArchive" : {
+                "add" : {
+                  "collection" : [ "" ]
+                },
+                "remove" : {
+                  "collection" : [ "" ]
+                },
+                "set" : {
+                  "collection" : [ "personArchive" ]
+                }
+              },
+              "onNotification" : {
+                "add" : {
+                  "collection" : [ "" ]
+                },
+                "remove" : {
+                  "collection" : [ "" ]
+                },
+                "set" : {
+                  "collection" : [ "personNotify" ]
+                }
+              }
+            }
+          },
+          "mergeStrategies" : [ ],
+          "merging" : [ {
+            "propertyName" : "firstName",
+            "sourceWeights" : [ ]
+          }, {
+            "algorithmRef" : "standard",
+            "sourceWeights" : [ ],
+            "default" : true
+          } ]
+        },
+        "matchOptions" : {
+          "dataFormat" : "json",
+          "propertyDefs" : {
+            "property" : [ {
+              "localname" : "firstName",
+              "name" : "firstName"
+            } ]
+          },
+          "algorithms" : {
+            "algorithm" : [ {
+              "name" : "double-metaphone",
+              "function" : "double-metaphone",
+              "at" : "/com.marklogic.smart-mastering/algorithms/double-metaphone.xqy"
+            }, {
+              "name" : "thesaurus",
+              "function" : "thesaurus",
+              "at" : "/com.marklogic.smart-mastering/algorithms/thesaurus.xqy"
+            }, {
+              "name" : "zip-match",
+              "function" : "zip-match",
+              "at" : "/com.marklogic.smart-mastering/algorithms/zip.xqy"
+            }, {
+              "name" : "standard-reduction",
+              "function" : "standard-reduction"
+            } ]
+          },
+          "collections" : {
+            "content" : [ ]
+          },
+          "scoring" : {
+            "add" : [ {
+              "propertyName" : "firstName",
+              "weight" : "10"
+            } ],
+            "expand" : [ ],
+            "reduce" : [ ]
+          },
+          "actions" : {
+            "action" : [ ]
+          },
+          "thresholds" : {
+            "threshold" : [ {
+              "above" : "10",
+              "label" : "Merge",
+              "action" : "merge"
+            } ]
+          },
+          "tuning" : {
+            "maxScan" : 200
+          }
+        },
+        "sourceCollection" : "MapPerson",
+        "targetDatabase" : "data-hub-FINAL"
+      },
+      "customHook" : { },
+      "retryLimit" : null,
+      "batchSize" : null,
+      "threadCount" : null,
+      "stepDefinitionName" : "default-mastering",
+      "stepDefinitionType" : "MASTERING"
+    }
+  }
+}
